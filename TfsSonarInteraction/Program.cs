@@ -157,22 +157,26 @@ namespace PRInteraction
 
         private static async Task<List<GitItem>> GetGitChanges(int pullRequestId)
         {
+            var commitChanges = new List<GitItem>();
             var connection = GetConnection();
             var client = connection.GetClient<GitHttpClient>();
-            var pr = await client.GetPullRequestCommitsAsync(
+            var prs = await client.GetPullRequestCommitsAsync(
                 AppSettings.RepoId,
                 pullRequestId
                 );
-
-
-            var lastCommited = pr.FirstOrDefault();
-            var lastItemsChange = await client.GetCommitAsync(
-                lastCommited.CommitId,
+            foreach(var item in prs)
+            {
+                var itemsChange = await client.GetCommitAsync(
+                item.CommitId,
                 AppSettings.RepoId,
                 AppSettings.MaxResult
                 );
-            var lastFilesChange = lastItemsChange.Changes.Where(p => p.Item.IsFolder != true).Select(p => p.Item).ToList();
-            return lastFilesChange;
+                var filesChange = itemsChange.Changes.Where(p => p.Item.IsFolder != true).Select(p => p.Item).ToList();
+
+                commitChanges.AddRange(filesChange);
+            }
+            
+            return commitChanges.Distinct().ToList();
         }
 
 
