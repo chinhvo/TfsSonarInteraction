@@ -1,12 +1,13 @@
-﻿$job = Start-Job { 
+﻿Start-Job -Name Job1 -ScriptBlock { 
 	[String]$sourcebranch = "$env:BUILD_SOURCEBRANCH"
 	$execFile = "C:\Users\chinh\Downloads\vsts-agent-win7-x64-2.122.1\_work\1\s\TfsSonarInteraction\TfsSonarInteraction.exe";
 	$pullrequest = "refs/pull/+(?<pullnumber>\w+?)/merge+"
 	if($sourcebranch -match $pullrequest){     
-		-Process -FilePath $execFile $Matches.pullnumber, "sonar1" -NoNewWindow -Wait; 
+		Start-Process -FilePath $execFile $Matches.pullnumber, "sonar1" -WindowStyle Hidden -Wait; 
 	}
 	else { write-host "Cannot find pull request ID" }
 }
+Wait-Job -Name Job1
 
 
 #OR
@@ -23,5 +24,10 @@ function Await-Task {
     }
 }
 
-$execFile = "C:\Users\chinh\Downloads\vsts-agent-win7-x64-2.122.1\_work\1\s\TfsSonarInteraction";
-$results = Start-Process -FilePath  $execFile 2, "sonar1" -WindowStyle Hidden | Await-Task
+[String]$sourcebranch = "$env:BUILD_SOURCEBRANCH"
+$execFile = "C:\Users\chinh\Downloads\vsts-agent-win7-x64-2.122.1\_work\1\s\TfsSonarInteraction\TfsSonarInteraction.exe";
+$pullrequest = "refs/pull/+(?<pullnumber>\w+?)/merge+"
+if($sourcebranch -match $pullrequest){     
+	Start-Process -FilePath  $execFile $Matches.pullnumber, "sonar1" -WindowStyle Hidden | Await-Task
+}
+else { write-host "Cannot find pull request ID" }

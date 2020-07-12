@@ -176,7 +176,8 @@ namespace PRInteraction
                 commitChanges.AddRange(filesChange);
             }
             
-            return commitChanges.Distinct().ToList();
+            return commitChanges.GroupBy(x => x.Path).Select(x => x.FirstOrDefault()).ToList();
+
         }
 
 
